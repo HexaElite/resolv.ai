@@ -2,9 +2,33 @@
    Resolv.AI — Main Application Entry
    ═══════════════════════════════════════════════════════════ */
 
-import { initScene } from './scene.js';
+import { initScene, updateSceneTheme } from './scene.js';
 import { initHomePage, destroyHomePage } from './home.js';
 import * as api from './api.js';
+
+// ── Theme Toggle ────────────────────────────────────────────
+const THEME_KEY = 'resolv-theme';
+
+function applyTheme(theme) {
+  document.body.setAttribute('data-theme', theme);
+  const icon = theme === 'light' ? '🌙' : '☀️';
+  document.getElementById('theme-toggle').textContent = icon;
+  const homeToggle = document.getElementById('home-theme-toggle');
+  if (homeToggle) homeToggle.textContent = icon;
+  localStorage.setItem(THEME_KEY, theme);
+  updateSceneTheme(theme);
+}
+
+function toggleTheme() {
+  const current = document.body.getAttribute('data-theme') || 'dark';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+// Load saved preference
+applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+
+document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+document.getElementById('home-theme-toggle')?.addEventListener('click', toggleTheme);
 
 // ── Home Page ───────────────────────────────────────────────
 const homePage = document.getElementById('home-page');

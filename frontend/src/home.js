@@ -10,17 +10,15 @@ let idleAction, walkAction, runAction;
 let scrollY = 0;
 let maxScroll = 0;
 let animationId = null;
-let currentBlend = 'idle'; // 'idle' | 'walk' | 'run'
+let currentBlend = 'idle'; // 'idle' | 'run'
+
+// Run speed range: 1x at top → 4x at bottom
+const RUN_SPEED_MIN = 1.0;
+const RUN_SPEED_MAX = 4.0;
+// Threshold above which we switch from idle to run (10% scroll)
+const RUN_THRESHOLD = 0.08;
 
 const MODEL_URL = 'https://threejs.org/examples/models/gltf/Soldier.glb';
-
-// Scroll sections (normalized 0-1)
-const SECTIONS = {
-  HERO:         { start: 0,    end: 0.2  },
-  FEATURES:     { start: 0.2,  end: 0.45 },
-  HOW_IT_WORKS: { start: 0.45, end: 0.7  },
-  CTA:          { start: 0.7,  end: 1.0  },
-};
 
 export function initHomePage() {
   const homeEl = document.getElementById('home-page');
@@ -40,7 +38,8 @@ function setupCanvas() {
 
   scene = new THREE.Scene();
   scene.background = null; // transparent — CSS bg shows through
-  scene.fog = new THREE.Fog(0x0a0e17, 10, 40);
+  const fogColor = document.body.getAttribute('data-theme') === 'light' ? 0xe8eeff : 0x0a0e17;
+  scene.fog = new THREE.Fog(fogColor, 10, 40);
 
   const w = wrap.clientWidth  || window.innerWidth * 0.45;
   const h = wrap.clientHeight || window.innerHeight;
@@ -86,16 +85,18 @@ function setupLights() {
 }
 
 function setupGround() {
+  const isLight = document.body.getAttribute('data-theme') === 'light';
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(30, 30),
-    new THREE.MeshPhongMaterial({ color: 0x0f172a, depthWrite: false })
+    new THREE.MeshPhongMaterial({ color: isLight ? 0xe8eeff : 0x0f172a, depthWrite: false })
   );
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   scene.add(ground);
 
   // subtle grid overlay
-  const grid = new THREE.GridHelper(30, 20, 0x1e293b, 0x0f172a);
+  const gridColor = isLight ? 0xc7d2fe : 0x1e293b;
+  const grid = new THREE.GridHelper(30, 20, gridColor, isLight ? 0xe8eeff : 0x0f172a);
   grid.material.opacity = 0.4;
   grid.material.transparent = true;
   scene.add(grid);
@@ -113,10 +114,9 @@ function loadSoldier() {
 
     idleAction = mixer.clipAction(anims[0]);
     runAction  = mixer.clipAction(anims[1]);
-    walkAction = mixer.clipAction(anims[3]);
 
     // Start all at weight 0, then set idle active
-    [idleAction, walkAction, runAction].forEach(a => {
+    [idleAction, runAction].forEach(a => {
       a.enabled = true;
       a.setEffectiveTimeScale(1);
       a.setEffectiveWeight(0);
@@ -128,16 +128,11 @@ function loadSoldier() {
 }
 
 // ── Smooth crossfade between actions ────────────────────────
-function crossFadeTo(target, duration = 0.4) {
+function crossFadeTo(target, duration = 0.35) {
   if (currentBlend === target) return;
 
-  const from = currentBlend === 'idle' ? idleAction
-             : currentBlend === 'walk' ? walkAction
-             : runAction;
-
-  const to   = target === 'idle' ? idleAction
-             : target === 'walk' ? walkAction
-             : runAction;
+  const from = currentBlend === 'idle' ? idleAction : runAction;
+  const to   = target      === 'idle' ? idleAction : runAction;
 
   from.crossFadeTo(to, duration, true);
   currentBlend = target;
@@ -155,11 +150,6 @@ function setupScrollListener() {
 
 function getScrollProgress() {
   return maxScroll > 0 ? Math.min(scrollY / maxScroll, 1) : 0;
-}
-
-function getSectionProgress(section) {
-  const p = getScrollProgress();
-  return Math.max(0, Math.min(1, (p - section.start) / (section.end - section.start)));
 }
 
 // ── Main loop ────────────────────────────────────────────────
@@ -181,50 +171,30 @@ function startLoop() {
 }
 
 function updateCameraAndBlend(t, p) {
-  if (!mixer) return; // model not loaded yet
+  if (!mixer) return;
 
-  // ── HERO (0–0.2): idle, camera front ────────────────────
-  if (p < SECTIONS.FEATURES.start) {
+  if (p < RUN_THRESHOLD) {
+    // ── Top: standing idle ───────────────────────────────
     crossFadeTo('idle');
-    camera.position.set(
-      Math.sin(t * 0.25) * 0.5 + 1,
-      2,
-      -5
-    );
+    runAction.setEffectiveTimeScale(RUN_SPEED_MIN);
+    camera.position.set(Math.sin(t * 0.25) * 0.5 + 1, 2, -5);
     camera.lookAt(0, 1, 0);
-  }
-
-  // ── FEATURES (0.2–0.45): walk ────────────────────────────
-  else if (p < SECTIONS.HOW_IT_WORKS.start) {
-    crossFadeTo('walk');
-    const fp = getSectionProgress(SECTIONS.FEATURES);
-    camera.position.set(
-      THREE.MathUtils.lerp(1, -1.5, fp),
-      THREE.MathUtils.lerp(2, 1.8, fp),
-      THREE.MathUtils.lerp(-5, -4, fp)
-    );
-    camera.lookAt(0, 1, 0);
-  }
-
-  // ── HOW IT WORKS (0.45–0.7): run, orbit camera ──────────
-  else if (p < SECTIONS.CTA.start) {
+  } else {
+    // ── Scrolling down: run, speed scales with progress ──
     crossFadeTo('run');
-    camera.position.set(
-      Math.sin(t * 0.4) * 3,
-      1.8,
-      Math.cos(t * 0.4) * -4 - 1
-    );
-    camera.lookAt(0, 1, 0);
-  }
 
-  // ── CTA (0.7–1.0): back to idle, pull back ───────────────
-  else {
-    crossFadeTo('idle');
-    const cp = getSectionProgress(SECTIONS.CTA);
+    // Map p from [RUN_THRESHOLD, 1] → [RUN_SPEED_MIN, RUN_SPEED_MAX]
+    const speedT = (p - RUN_THRESHOLD) / (1 - RUN_THRESHOLD);
+    const speed  = THREE.MathUtils.lerp(RUN_SPEED_MIN, RUN_SPEED_MAX, speedT);
+    runAction.setEffectiveTimeScale(speed);
+
+    // Camera pulls back slightly as speed increases (sense of velocity)
+    const camZ = THREE.MathUtils.lerp(-5, -7, speedT);
+    const camY = THREE.MathUtils.lerp(2, 1.6, speedT);
     camera.position.set(
-      THREE.MathUtils.lerp(0, 0.5, cp),
-      THREE.MathUtils.lerp(1.8, 2.5, cp),
-      THREE.MathUtils.lerp(-4, -7, cp)
+      Math.sin(t * 0.2 * speed) * 0.3 + 0.5,
+      camY,
+      camZ
     );
     camera.lookAt(0, 1, 0);
   }

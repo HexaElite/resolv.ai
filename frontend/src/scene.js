@@ -179,3 +179,10 @@ function createGrid() {
 export function getScene() { return scene; }
 export function getCamera() { return camera; }
 export function getRenderer() { return renderer; }
+
+export function updateSceneTheme(theme) {
+  if (!scene) return;
+  const color = theme === 'light' ? 0xf0f4ff : 0x0a0e17;
+  scene.background = new THREE.Color(color);
+  scene.fog = new THREE.FogExp2(color, 0.003);
+}

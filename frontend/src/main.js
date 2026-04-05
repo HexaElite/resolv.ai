@@ -26,7 +26,7 @@ function toggleTheme() {
 }
 
 // Load saved preference
-applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+applyTheme(localStorage.getItem(THEME_KEY) || 'light');
 
 document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 document.getElementById('home-theme-toggle')?.addEventListener('click', toggleTheme);

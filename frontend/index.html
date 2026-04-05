@@ -9,9 +9,194 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/src/style.css" />
+  <link rel="stylesheet" href="/src/home.css" />
 </head>
 <body>
-  <!-- Three.js Canvas -->
+
+  <!-- ══════════════════════════════════════════════════════
+       HOME PAGE — Scroll-driven 3D Roblox character landing
+       ══════════════════════════════════════════════════════ -->
+  <div id="home-page">
+
+    <!-- Nav -->
+    <nav id="home-nav">
+      <div class="home-logo">
+        <span class="home-logo-icon">⚡</span>
+        resolv<span class="home-logo-dot">.ai</span>
+      </div>
+      <div class="home-nav-links">
+        <a class="home-nav-link" href="#section-features">Features</a>
+        <a class="home-nav-link" href="#section-how">How it works</a>
+        <button class="home-nav-cta" id="home-enter-btn">Open Dashboard →</button>
+      </div>
+    </nav>
+
+    <!-- Layout: sticky 3D canvas left + scrollable content right -->
+    <div id="home-layout">
+
+      <!-- 3D Canvas (sticky) -->
+      <div id="home-canvas-wrap">
+        <canvas id="home-canvas"></canvas>
+        <!-- Scroll progress dots -->
+        <div id="scroll-progress">
+          <div class="scroll-dot active" data-section="hero" title="Hero"></div>
+          <div class="scroll-dot" data-section="features" title="Features"></div>
+          <div class="scroll-dot" data-section="how" title="How it works"></div>
+          <div class="scroll-dot" data-section="cta" title="Get Started"></div>
+        </div>
+      </div>
+
+      <!-- Scrollable content -->
+      <div id="home-scroll">
+
+        <!-- HERO -->
+        <section class="home-section" id="section-hero">
+          <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            AI-Powered Campus Operations
+          </div>
+          <h1 class="hero-title">
+            Smart service<br>
+            requests with<br>
+            <span class="gradient-text">AI superpowers</span>
+          </h1>
+          <p class="hero-subtitle">
+            Submit, track, and resolve campus issues in seconds.
+            Our AI automatically classifies, prioritizes, and suggests
+            resolution steps — so your team can focus on what matters.
+          </p>
+          <div class="hero-actions">
+            <button class="btn-hero-primary" id="hero-cta-btn">
+              Get Started Free →
+            </button>
+            <button class="btn-hero-secondary" id="hero-demo-btn">
+              View Demo
+            </button>
+          </div>
+          <div class="hero-stats">
+            <div>
+              <div class="hero-stat-value">10x</div>
+              <div class="hero-stat-label">Faster resolution</div>
+            </div>
+            <div>
+              <div class="hero-stat-value">98%</div>
+              <div class="hero-stat-label">AI accuracy</div>
+            </div>
+            <div>
+              <div class="hero-stat-value">24/7</div>
+              <div class="hero-stat-label">Always on</div>
+            </div>
+          </div>
+          <div class="scroll-hint">
+            <span class="scroll-hint-arrow">↓</span>
+            Scroll to explore
+          </div>
+        </section>
+
+        <!-- FEATURES -->
+        <section class="home-section" id="section-features">
+          <div class="section-label">Features</div>
+          <h2 class="section-title">Everything your<br>campus needs</h2>
+          <p class="section-desc">
+            From IT tickets to facilities management — resolv.ai handles
+            it all with intelligent automation and real-time insights.
+          </p>
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="feature-icon">🤖</div>
+              <div class="feature-title">AI Classification</div>
+              <div class="feature-desc">Auto-detect category, priority, and resolution steps from plain text.</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">⚡</div>
+              <div class="feature-title">Instant Routing</div>
+              <div class="feature-desc">Requests are assigned to the right team the moment they're submitted.</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📊</div>
+              <div class="feature-title">Live Dashboard</div>
+              <div class="feature-desc">Real-time metrics, charts, and status tracking across all requests.</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">💬</div>
+              <div class="feature-title">AI Chat</div>
+              <div class="feature-desc">Describe issues conversationally — AI structures and submits for you.</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🔔</div>
+              <div class="feature-title">Smart Alerts</div>
+              <div class="feature-desc">Get notified about critical issues before they escalate.</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🔒</div>
+              <div class="feature-title">Secure & Private</div>
+              <div class="feature-desc">Enterprise-grade security with full audit trails and access control.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HOW IT WORKS -->
+        <section class="home-section" id="section-how">
+          <div class="section-label">How it works</div>
+          <h2 class="section-title">Three steps to<br>resolution</h2>
+          <p class="section-desc">
+            No training required. Just describe the problem and let
+            the AI handle the rest.
+          </p>
+          <div class="steps-list">
+            <div class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Describe your issue</div>
+                <div class="step-desc">Type a quick description or chat with the AI assistant. No forms, no categories to guess.</div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">AI analyzes & classifies</div>
+                <div class="step-desc">Our model detects priority, category, and generates step-by-step resolution guidance instantly.</div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-title">Track to completion</div>
+                <div class="step-desc">Follow progress in real-time. Get alerts on status changes and close the loop fast.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="home-section" id="section-cta">
+          <div class="cta-card">
+            <div class="section-label">Ready to start?</div>
+            <h2 class="cta-title">Your campus runs<br>smoother with AI</h2>
+            <p class="cta-desc">
+              Join teams already using resolv.ai to cut resolution times,
+              reduce manual work, and keep everyone in the loop.
+            </p>
+            <div class="cta-actions">
+              <button class="btn-hero-primary" id="cta-enter-btn">
+                Open Dashboard →
+              </button>
+              <button class="btn-hero-secondary">Learn more</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer id="home-footer">
+          <div class="footer-logo">resolv<span>.ai</span></div>
+          <div class="footer-copy">© 2026 Resolv.AI — AI-Powered Campus Operations</div>
+        </footer>
+
+      </div><!-- /home-scroll -->
+    </div><!-- /home-layout -->
+  </div><!-- /home-page -->
+
+  <!-- Three.js Canvas (dashboard bg) -->
   <canvas id="three-canvas"></canvas>
 
   <!-- UI Overlay -->

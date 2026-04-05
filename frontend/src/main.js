@@ -3,10 +3,65 @@
    ═══════════════════════════════════════════════════════════ */
 
 import { initScene } from './scene.js';
+import { initHomePage, destroyHomePage } from './home.js';
 import * as api from './api.js';
 
-// ── Initialize Three.js ─────────────────────────────────────
-initScene();
+// ── Home Page ───────────────────────────────────────────────
+const homePage = document.getElementById('home-page');
+const appOverlay = document.getElementById('app-overlay');
+
+function enterDashboard() {
+  destroyHomePage();
+  homePage.style.transition = 'opacity 0.5s ease';
+  homePage.style.opacity = '0';
+  setTimeout(() => {
+    homePage.style.display = 'none';
+    appOverlay.style.display = 'flex';
+    initScene();
+    loadDashboard();
+    pollAlerts();
+    alertInterval = setInterval(pollAlerts, 10000);
+  }, 500);
+}
+
+// Hide dashboard initially
+appOverlay.style.display = 'none';
+
+// Init home page
+initHomePage();
+
+// Wire up all "enter dashboard" buttons
+document.getElementById('home-enter-btn')?.addEventListener('click', enterDashboard);
+document.getElementById('hero-cta-btn')?.addEventListener('click', enterDashboard);
+document.getElementById('hero-demo-btn')?.addEventListener('click', enterDashboard);
+document.getElementById('cta-enter-btn')?.addEventListener('click', enterDashboard);
+
+// Scroll progress dots
+const scrollContainer = document.getElementById('home-scroll');
+const dots = document.querySelectorAll('.scroll-dot');
+const sectionIds = ['section-hero', 'section-features', 'section-how', 'section-cta'];
+
+scrollContainer?.addEventListener('scroll', () => {
+  const scrollTop = scrollContainer.scrollTop;
+  const totalH = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+  const p = totalH > 0 ? scrollTop / totalH : 0;
+
+  // Activate dot based on progress
+  let activeIdx = 0;
+  if (p >= 0.7) activeIdx = 3;
+  else if (p >= 0.45) activeIdx = 2;
+  else if (p >= 0.2) activeIdx = 1;
+
+  dots.forEach((d, i) => d.classList.toggle('active', i === activeIdx));
+});
+
+// Dot click scrolls to section
+dots.forEach((dot, i) => {
+  dot.addEventListener('click', () => {
+    const el = document.getElementById(sectionIds[i]);
+    el?.scrollIntoView({ behavior: 'smooth' });
+  });
+});
 
 // ── State ───────────────────────────────────────────────────
 let currentView = 'dashboard';

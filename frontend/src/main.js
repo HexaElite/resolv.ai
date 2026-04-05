@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 import { initScene, updateSceneTheme } from './scene.js';
-import { initHomePage, destroyHomePage } from './home.js';
+import { initHomePage, destroyHomePage, updateHomeTheme } from './home.js';
 import * as api from './api.js';
 
 // ── Theme Toggle ────────────────────────────────────────────
@@ -16,7 +16,8 @@ function applyTheme(theme) {
   const homeToggle = document.getElementById('home-theme-toggle');
   if (homeToggle) homeToggle.textContent = icon;
   localStorage.setItem(THEME_KEY, theme);
-  updateSceneTheme(theme);
+  updateSceneTheme(theme);   // dashboard scene (no-ops if not init'd)
+  updateHomeTheme(theme);    // home scene (no-ops if not init'd)
 }
 
 function toggleTheme() {
@@ -34,13 +35,17 @@ document.getElementById('home-theme-toggle')?.addEventListener('click', toggleTh
 const homePage = document.getElementById('home-page');
 const appOverlay = document.getElementById('app-overlay');
 
+// Ensure clean initial state — home visible, dashboard hidden
+homePage.classList.remove('hidden');
+appOverlay.classList.remove('visible');
+
 function enterDashboard() {
   destroyHomePage();
-  homePage.style.transition = 'opacity 0.5s ease';
-  homePage.style.opacity = '0';
+  // Fade home out
+  homePage.classList.add('hidden');
   setTimeout(() => {
-    homePage.style.display = 'none';
-    appOverlay.style.display = 'flex';
+    // Show dashboard with fade-in
+    appOverlay.classList.add('visible');
     initScene();
     loadDashboard();
     pollAlerts();
@@ -48,8 +53,17 @@ function enterDashboard() {
   }, 500);
 }
 
-// Hide dashboard initially
-appOverlay.style.display = 'none';
+function goHome() {
+  if (alertInterval) { clearInterval(alertInterval); alertInterval = null; }
+
+  // Fade dashboard out
+  appOverlay.classList.remove('visible');
+  setTimeout(() => {
+    // Show home with fade-in
+    homePage.classList.remove('hidden');
+    initHomePage();
+  }, 400);
+}
 
 // Init home page
 initHomePage();
@@ -59,6 +73,10 @@ document.getElementById('home-enter-btn')?.addEventListener('click', enterDashbo
 document.getElementById('hero-cta-btn')?.addEventListener('click', enterDashboard);
 document.getElementById('hero-demo-btn')?.addEventListener('click', enterDashboard);
 document.getElementById('cta-enter-btn')?.addEventListener('click', enterDashboard);
+
+// Logo and Home nav button go back to home
+document.getElementById('logo-home-btn')?.addEventListener('click', goHome);
+document.getElementById('nav-home')?.addEventListener('click', goHome);
 
 // Scroll progress dots
 const scrollContainer = document.getElementById('home-scroll');
@@ -102,6 +120,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
 });
 
 function switchView(view) {
+  if (view === 'home') { goHome(); return; }
   currentView = view;
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelector(`[data-view="${view}"]`)?.classList.add('active');

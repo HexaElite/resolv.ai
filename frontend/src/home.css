@@ -10,7 +10,14 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: background 0.3s ease;
+  transition: opacity 0.5s ease, background 0.3s ease;
+  opacity: 1;
+}
+
+#home-page.hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
 
 [data-theme="light"] #home-page {
@@ -633,7 +640,92 @@
   #home-scroll { overflow-y: visible; }
   #home-page { overflow-y: auto; }
   .home-section { padding: 60px 24px; min-height: auto; }
-  .feature-grid { grid-template-columns: 1fr; }
+  .feature-grid { grid-template-columns: 1fr 1fr; }
   #home-nav { padding: 0 20px; }
   #home-footer { padding: 24px; flex-direction: column; gap: 8px; text-align: center; }
+  #scroll-progress { display: none; }
+  .hero-stats { gap: 20px; }
+  .cta-card { padding: 28px 20px; }
+}
+
+@media (max-width: 600px) {
+  #home-nav {
+    padding: 0 16px;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .home-nav-links {
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .home-nav-link {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .home-nav-cta {
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+  #home-layout {
+    padding-top: 56px;
+  }
+  #home-canvas-wrap {
+    height: 35vh;
+  }
+  .home-section {
+    padding: 40px 16px;
+  }
+  .hero-title {
+    font-size: clamp(28px, 8vw, 40px);
+  }
+  .hero-subtitle {
+    font-size: 14px;
+  }
+  .hero-actions {
+    flex-direction: column;
+  }
+  .btn-hero-primary,
+  .btn-hero-secondary {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+  .hero-stats {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .hero-stat-value {
+    font-size: 22px;
+  }
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+  .section-title {
+    font-size: clamp(22px, 6vw, 32px);
+  }
+  .cta-card {
+    padding: 24px 16px;
+  }
+  .cta-title {
+    font-size: clamp(20px, 5vw, 28px);
+  }
+  .cta-actions {
+    flex-direction: column;
+  }
+  .cta-actions .btn-hero-primary,
+  .cta-actions .btn-hero-secondary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  #home-footer {
+    padding: 20px 16px;
+  }
+  .scroll-hint {
+    margin-top: 24px;
+  }
 }

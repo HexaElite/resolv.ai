@@ -147,6 +147,14 @@ html, body {
   display: flex;
   flex-direction: column;
   pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease;
+}
+
+#app-overlay.visible {
+  opacity: 1;
+  visibility: visible;
 }
 
 #app-overlay > * {
@@ -192,6 +200,10 @@ html, body {
 
 .logo-dot {
   color: var(--accent-blue);
+}
+
+.logo:hover .logo-text {
+  opacity: 0.8;
 }
 
 .top-bar-nav {
@@ -990,5 +1002,106 @@ html, body {
   .nav-btn {
     padding: 6px 10px;
     font-size: 12px;
+  }
+  #main-content {
+    padding: 16px;
+  }
+  .glass-form {
+    max-width: 100%;
+    padding: 16px;
+  }
+  .ai-result-panel {
+    max-width: 100%;
+    padding: 16px;
+  }
+  .chat-container {
+    height: calc(100vh - 200px);
+  }
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+  .glass-panel {
+    padding: 20px 16px;
+  }
+  .detail-actions {
+    flex-direction: column;
+  }
+  .detail-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+  .request-card {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .request-card .rc-badges {
+    width: 100%;
+  }
+  .filter-bar {
+    flex-direction: column;
+  }
+  .filter-select {
+    width: 100%;
+  }
+  #filter-apply {
+    width: 100%;
+  }
+  .section-header h1 {
+    font-size: 20px;
+  }
+  .metric-card .metric-value {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 480px) {
+  #top-bar {
+    padding: 0 12px;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .top-bar-nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    justify-content: flex-start;
+  }
+  .top-bar-nav::-webkit-scrollbar {
+    height: 2px;
+  }
+  .nav-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  .metric-cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .metric-card {
+    padding: 14px;
+  }
+  .metric-card .metric-value {
+    font-size: 22px;
+  }
+  .alert-banner {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .chat-input-bar {
+    flex-direction: row;
+  }
+  .chat-input-bar input {
+    font-size: 13px;
+  }
+  .bar-row .bar-label {
+    width: 70px;
+    font-size: 11px;
   }
 }

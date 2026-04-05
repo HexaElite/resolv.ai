@@ -6,17 +6,17 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 let scene, camera, renderer, mixer, clock;
-let idleAction, walkAction, runAction;
+let idleAction, runAction;
 let scrollY = 0;
 let maxScroll = 0;
 let animationId = null;
-let currentBlend = 'idle'; // 'idle' | 'run'
 
 // Run speed range: 1x at top → 4x at bottom
 const RUN_SPEED_MIN = 1.0;
 const RUN_SPEED_MAX = 4.0;
-// Threshold above which we switch from idle to run (10% scroll)
-const RUN_THRESHOLD = 0.08;
+// Scroll progress at which run is fully blended in
+const RUN_BLEND_START = 0.05;
+const RUN_BLEND_FULL  = 0.20;
 
 const MODEL_URL = 'https://threejs.org/examples/models/gltf/Soldier.glb';
 
@@ -110,32 +110,23 @@ function loadSoldier() {
     scene.add(model);
 
     mixer = new THREE.AnimationMixer(model);
-    const anims = gltf.animations; // [0]=idle [1]=run [3]=walk
+    const anims = gltf.animations; // [0]=idle [1]=run
 
     idleAction = mixer.clipAction(anims[0]);
     runAction  = mixer.clipAction(anims[1]);
 
-    // Start all at weight 0, then set idle active
-    [idleAction, runAction].forEach(a => {
-      a.enabled = true;
-      a.setEffectiveTimeScale(1);
-      a.setEffectiveWeight(0);
-      a.play();
-    });
-    idleAction.setEffectiveWeight(1);
-    currentBlend = 'idle';
+    // Both playing at all times — weights driven each frame
+    idleAction.play();
+    runAction.play();
   });
 }
 
 // ── Smooth crossfade between actions ────────────────────────
-function crossFadeTo(target, duration = 0.35) {
-  if (currentBlend === target) return;
-
-  const from = currentBlend === 'idle' ? idleAction : runAction;
-  const to   = target      === 'idle' ? idleAction : runAction;
-
-  from.crossFadeTo(to, duration, true);
-  currentBlend = target;
+// Weights are driven directly each frame — no state machine needed
+function setBlendWeights(runWeight) {
+  const idleWeight = 1 - runWeight;
+  idleAction.setEffectiveWeight(idleWeight);
+  runAction.setEffectiveWeight(runWeight);
 }
 
 // ── Scroll ───────────────────────────────────────────────────
@@ -171,36 +162,45 @@ function startLoop() {
 }
 
 function updateCameraAndBlend(t, p) {
-  if (!mixer) return;
+  if (!idleAction || !runAction) return;
 
-  if (p < RUN_THRESHOLD) {
-    // ── Top: standing idle ───────────────────────────────
-    crossFadeTo('idle');
-    runAction.setEffectiveTimeScale(RUN_SPEED_MIN);
-    camera.position.set(Math.sin(t * 0.25) * 0.5 + 1, 2, -5);
-    camera.lookAt(0, 1, 0);
-  } else {
-    // ── Scrolling down: run, speed scales with progress ──
-    crossFadeTo('run');
+  // Blend weight: 0 = full idle, 1 = full run
+  // Fades in from RUN_BLEND_START → RUN_BLEND_FULL, then stays at 1
+  const runWeight = THREE.MathUtils.clamp(
+    (p - RUN_BLEND_START) / (RUN_BLEND_FULL - RUN_BLEND_START),
+    0, 1
+  );
+  setBlendWeights(runWeight);
 
-    // Map p from [RUN_THRESHOLD, 1] → [RUN_SPEED_MIN, RUN_SPEED_MAX]
-    const speedT = (p - RUN_THRESHOLD) / (1 - RUN_THRESHOLD);
-    const speed  = THREE.MathUtils.lerp(RUN_SPEED_MIN, RUN_SPEED_MAX, speedT);
-    runAction.setEffectiveTimeScale(speed);
+  // Run speed scales linearly with scroll: 1x at top → 4x at bottom
+  const speed = THREE.MathUtils.lerp(RUN_SPEED_MIN, RUN_SPEED_MAX, p);
+  runAction.setEffectiveTimeScale(speed);
+  idleAction.setEffectiveTimeScale(1);
 
-    // Camera pulls back slightly as speed increases (sense of velocity)
-    const camZ = THREE.MathUtils.lerp(-5, -7, speedT);
-    const camY = THREE.MathUtils.lerp(2, 1.6, speedT);
-    camera.position.set(
-      Math.sin(t * 0.2 * speed) * 0.3 + 0.5,
-      camY,
-      camZ
-    );
-    camera.lookAt(0, 1, 0);
-  }
+  // Camera: gentle sway at top, pulls back and lowers as speed increases
+  const camZ = THREE.MathUtils.lerp(-5, -7, p);
+  const camY = THREE.MathUtils.lerp(2.2, 1.5, p);
+  const swayAmp = THREE.MathUtils.lerp(0.4, 0.15, p);
+  const swayFreq = 0.25 + speed * 0.15;
+  camera.position.set(
+    Math.sin(t * swayFreq) * swayAmp + 0.5,
+    camY,
+    camZ
+  );
+  camera.lookAt(0, 1, 0);
 }
 
 export function destroyHomePage() {
   if (animationId) cancelAnimationFrame(animationId);
   if (renderer) renderer.dispose();
+  // reset module-level state so re-init works cleanly
+  scene = null; camera = null; renderer = null;
+  mixer = null; idleAction = null; runAction = null;
+  scrollY = 0; maxScroll = 0; animationId = null;
+}
+
+export function updateHomeTheme(theme) {
+  if (!scene) return;
+  const fogColor = theme === 'light' ? 0xe8eeff : 0x0a0e17;
+  scene.fog = new THREE.Fog(fogColor, 10, 40);
 }

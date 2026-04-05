@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Resolv.AI — AI-Powered Smart Service Request Platform for campus operations" />
+  <title>Resolv.AI — Smart Service Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <!-- Three.js Canvas -->
+  <canvas id="three-canvas"></canvas>
+
+  <!-- UI Overlay -->
+  <div id="app-overlay">
+    <!-- Top Bar -->
+    <header id="top-bar">
+      <div class="top-bar-left">
+        <div class="logo">
+          <span class="logo-icon">⚡</span>
+          <span class="logo-text">resolv<span class="logo-dot">.ai</span></span>
+        </div>
+      </div>
+      <nav class="top-bar-nav">
+        <button class="nav-btn active" data-view="dashboard" id="nav-dashboard">Dashboard</button>
+        <button class="nav-btn" data-view="requests" id="nav-requests">Requests</button>
+        <button class="nav-btn" data-view="new" id="nav-new">+ New Request</button>
+        <button class="nav-btn" data-view="chat" id="nav-chat">AI Chat</button>
+      </nav>
+      <div class="top-bar-right">
+        <div id="alert-indicator" class="alert-indicator hidden">
+          <span class="alert-pulse"></span>
+          <span class="alert-count">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Alert Banner -->
+    <div id="alert-banner" class="alert-banner hidden"></div>
+
+    <!-- Main Content Panels -->
+    <main id="main-content">
+      <!-- Dashboard View -->
+      <section id="view-dashboard" class="view active">
+        <div class="section-header">
+          <h1>Campus Operations Dashboard</h1>
+          <p class="subtitle">Real-time overview of all service requests</p>
+        </div>
+        <div id="metric-cards" class="metric-cards"></div>
+        <div class="dashboard-grid">
+          <div class="dash-card" id="status-chart">
+            <h3>By Status</h3>
+            <div id="status-bars" class="bar-chart"></div>
+          </div>
+          <div class="dash-card" id="priority-chart">
+            <h3>By Priority</h3>
+            <div id="priority-bars" class="bar-chart"></div>
+          </div>
+          <div class="dash-card recent-card" id="recent-requests">
+            <h3>Recent Requests</h3>
+            <div id="recent-list" class="recent-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Request List View -->
+      <section id="view-requests" class="view">
+        <div class="section-header">
+          <h1>Service Requests</h1>
+          <p class="subtitle">Filter and manage all campus requests</p>
+        </div>
+        <div class="filter-bar" id="filter-bar">
+          <select id="filter-status" class="filter-select">
+            <option value="">All Status</option>
+            <option value="NEW">New</option>
+            <option value="ASSIGNED">Assigned</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="COMPLETED">Completed</option>
+          </select>
+          <select id="filter-category" class="filter-select">
+            <option value="">All Categories</option>
+            <option value="IT">IT</option>
+            <option value="FACILITIES">Facilities</option>
+            <option value="HR">HR</option>
+            <option value="SECURITY">Security</option>
+            <option value="OTHER">Other</option>
+          </select>
+          <select id="filter-priority" class="filter-select">
+            <option value="">All Priorities</option>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+          </select>
+          <button id="filter-apply" class="btn btn-primary">Apply</button>
+        </div>
+        <div id="request-list" class="request-list"></div>
+      </section>
+
+      <!-- New Request Form View -->
+      <section id="view-new" class="view">
+        <div class="section-header">
+          <h1>Submit New Request</h1>
+          <p class="subtitle">Describe your issue — AI will analyze and classify it automatically</p>
+        </div>
+        <form id="request-form" class="glass-form">
+          <div class="form-group">
+            <label for="req-title">Title</label>
+            <input type="text" id="req-title" placeholder="Brief title for your issue" required />
+          </div>
+          <div class="form-group">
+            <label for="req-description">Description</label>
+            <textarea id="req-description" rows="4" placeholder="Describe the problem in detail — AI will analyze this to determine priority and category" required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="req-category">Category</label>
+              <select id="req-category">
+                <option value="AUTO" selected>🤖 AUTO (AI Detect)</option>
+                <option value="IT">IT</option>
+                <option value="FACILITIES">Facilities</option>
+                <option value="HR">HR</option>
+                <option value="SECURITY">Security</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="req-priority">Priority</label>
+              <select id="req-priority">
+                <option value="AUTO" selected>🤖 AUTO (AI Detect)</option>
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="CRITICAL">Critical</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="req-location">Location</label>
+            <input type="text" id="req-location" placeholder="e.g., Lab 3, Block C, Server Room" />
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+            <span class="btn-text">Submit Request</span>
+            <span class="btn-loading hidden">Analyzing...</span>
+          </button>
+        </form>
+        <!-- AI Analysis Result Panel -->
+        <div id="ai-result-panel" class="ai-result-panel hidden">
+          <h3>🤖 AI Analysis Result</h3>
+          <div id="ai-result-content"></div>
+        </div>
+      </section>
+
+      <!-- AI Chat View -->
+      <section id="view-chat" class="view">
+        <div class="section-header">
+          <h1>AI Chat Assistant</h1>
+          <p class="subtitle">Describe your issue conversationally — AI will help create a structured request</p>
+        </div>
+        <div id="chat-container" class="chat-container">
+          <div id="chat-messages" class="chat-messages">
+            <div class="chat-msg ai">
+              <div class="chat-avatar">AI</div>
+              <div class="chat-bubble">Hi! I'm your resolv.ai assistant. Describe any campus issue and I'll help categorize and submit it as a service request.</div>
+            </div>
+          </div>
+          <div class="chat-input-bar">
+            <input type="text" id="chat-input" placeholder="Describe your issue..." />
+            <button id="chat-send" class="btn btn-primary">Send</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Request Detail Modal -->
+    <div id="detail-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content glass-panel">
+        <button class="modal-close" id="modal-close">&times;</button>
+        <div id="detail-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -7,8 +7,10 @@ export function initScene() {
 
   // ── Scene ───────────────────────────────────────────────
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a0e17);
-  scene.fog = new THREE.FogExp2(0x0a0e17, 0.003);
+  const initTheme = localStorage.getItem('resolv-theme') || 'light';
+  const initColor = initTheme === 'light' ? 0xf0f4ff : 0x0a0e17;
+  scene.background = new THREE.Color(initColor);
+  scene.fog = new THREE.FogExp2(initColor, 0.003);
 
   // ── Camera ──────────────────────────────────────────────
   camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
